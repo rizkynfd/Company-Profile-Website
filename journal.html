@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Hype | PARFUM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- CORE STYLES --- */
+        :root { --bg-color: #050505; --text-color: #e0e0e0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
+        body { background-color: var(--bg-color); color: var(--text-color); font-family: 'Inter', sans-serif; overflow-x: hidden; scroll-behavior: smooth; }
+
+        .noise-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E"); pointer-events: none; z-index: 9998; }
+
+        .cursor { width: 15px; height: 15px; background: white; border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999; mix-blend-mode: exclusion; transition: transform 0.1s; }
+        .cursor.active { transform: scale(4); background: transparent; border: 1px solid white; }
+
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 2rem 5%; position: fixed; width: 100%; top: 0; z-index: 100; background: rgba(5, 5, 5, 0.5); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .logo { font-family: 'Oswald', sans-serif; font-size: 1.5rem; font-weight: 700; letter-spacing: 3px; }
+        .nav-links { display: flex; gap: 3rem; }
+        .nav-links a { text-decoration: none; color: white; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; opacity: 0.6; transition: 0.3s; }
+        .nav-links a:hover, .nav-links a.active { opacity: 1; letter-spacing: 2px; }
+        .hamburger { display: none; cursor: pointer; z-index: 101; }
+        .bar { display: block; width: 25px; height: 2px; margin: 6px auto; background-color: white; }
+
+        section { padding: 10rem 5% 4rem; max-width: 1200px; margin: 0 auto; min-height: 100vh; }
+        
+        h1 { font-family: 'Oswald', sans-serif; font-size: 4rem; text-transform: uppercase; margin-bottom: 1rem; line-height: 1; text-align: center; }
+        .subtitle { text-align: center; color: #888; margin-bottom: 5rem; font-size: 1.2rem; }
+
+        /* MASONRY GRID UNTUK REVIEW */
+        .review-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .review-card {
+            background: #111;
+            padding: 2rem;
+            border: 1px solid #222;
+            transition: 0.3s;
+            position: relative;
+        }
+        .review-card:hover { transform: translateY(-5px); border-color: #fff; background: #1a1a1a; }
+        
+        .stars { color: #fff; letter-spacing: 5px; margin-bottom: 1rem; display: block; font-size: 0.8rem; }
+        .review-text { font-size: 1.1rem; line-height: 1.6; margin-bottom: 1.5rem; font-style: italic; color: #ccc; }
+        .user { display: flex; align-items: center; gap: 1rem; }
+        .avatar { width: 40px; height: 40px; background: #333; border-radius: 50%; }
+        .username { font-family: 'Oswald', sans-serif; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 1px; }
+        .platform { font-size: 0.7rem; color: #666; text-transform: uppercase; }
+
+        /* Highlight Big Review */
+        .big-review {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 4rem 2rem;
+            border: 1px solid #333;
+            margin-bottom: 2rem;
+            background: radial-gradient(circle, #1a1a1a 0%, #050505 100%);
+        }
+        .big-review h2 { font-family: 'Inter', sans-serif; font-size: 2rem; font-weight: 300; margin-bottom: 1rem; color: #fff; }
+
+        .reveal { opacity: 0; transform: translateY(50px); transition: all 1s ease; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        footer { padding: 4rem 5%; border-top: 1px solid #222; text-align: center; color: #666; font-size: 0.8rem; }
+        @media (max-width: 768px) { .nav-links { position: fixed; right: -100%; top: 0; height: 100vh; background: #000; width: 70%; flex-direction: column; justify-content: center; transition: 0.4s; border-left: 1px solid #333; } .nav-links.active { right: 0; } .hamburger { display: block; } h1 { font-size: 2.5rem; } }
+    </style>
+</head>
+<body>
+    <div class="noise-overlay"></div>
+    <div class="cursor"></div>
+    <nav>
+        <div class="logo">PARFUM.</div>
+        <ul class="nav-links">
+            <li><a href="index.html" class="hover-trigger">Home</a></li>
+            <li><a href="about.html" class="hover-trigger">Manifesto</a></li>
+            <li><a href="products.html" class="hover-trigger">The Archive</a></li>
+            <li><a href="journal.html" class="hover-trigger active">The Hype</a></li>
+            <li><a href="contact.html" class="hover-trigger">Join Cult</a></li>
+        </ul>
+        <div class="hamburger hover-trigger"><span class="bar"></span><span class="bar"></span><span class="bar"></span></div>
+    </nav>
+
+    <section>
+        <h1 class="reveal">WORD ON THE STREET</h1>
+        <p class="subtitle reveal">Apa kata mereka yang sudah wangi.</p>
+
+        <div class="review-grid">
+            
+            <div class="reveal big-review hover-trigger">
+                <span class="stars">★★★★★</span>
+                <h2>"Akhirnya nemu parfum lokal yang wanginya gak pasaran. Tahan 12 jam dipakai motoran!"</h2>
+                <br>
+                <span class="username">@rizkybillar_kw</span>
+            </div>
+
+            <div class="reveal review-card hover-trigger">
+                <span class="stars">★★★★★</span>
+                <p class="review-text">"Blind buy Nocturnal Mist karena racun TikTok. Gila sih, vibes-nya mahal banget. Definisi dark & mysterious."</p>
+                <div class="user">
+                    <div class="avatar" style="background: url('https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100&auto=format&fit=crop'); background-size: cover;"></div>
+                    <div>
+                        <div class="username">Sarah A.</div>
+                        <div class="platform">Via Shopee</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reveal review-card hover-trigger">
+                <span class="stars">★★★★★</span>
+                <p class="review-text">"Packaging niat banget, botolnya berat. Wanginya black opium lewat. Fix langganan."</p>
+                <div class="user">
+                    <div class="avatar" style="background: url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&auto=format&fit=crop'); background-size: cover;"></div>
+                    <div>
+                        <div class="username">Dimas P.</div>
+                        <div class="platform">Via Tokopedia</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reveal review-card hover-trigger">
+                <span class="stars">★★★★★</span>
+                <p class="review-text">"Layering Neon Smoke sama Black Haze = KOMBO MAUT. Seharian ditanyain orang pake parfum apa."</p>
+                <div class="user">
+                    <div class="avatar" style="background: url('https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=100&auto=format&fit=crop'); background-size: cover;"></div>
+                    <div>
+                        <div class="username">Michelle Z.</div>
+                        <div class="platform">Via Instagram</div>
+                    </div>
+                </div>
+            </div>
+
+             <div class="reveal review-card hover-trigger">
+                <span class="stars">★★★★★</span>
+                <p class="review-text">"Pengiriman cepet, admin ramah. Worth every penny. Jangan ragu beli guys."</p>
+                <div class="user">
+                    <div class="avatar" style="background: url('https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=100&auto=format&fit=crop'); background-size: cover;"></div>
+                    <div>
+                        <div class="username">Aldi Taher</div>
+                        <div class="platform">Via WhatsApp</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <footer><p class="reveal">© 2025 PARFUM. All Rights Reserved.</p></footer>
+    <script>
+        const cursor = document.querySelector('.cursor');
+        document.addEventListener('mousemove', (e) => { cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px'; });
+        document.querySelectorAll('.hover-trigger').forEach(l => {
+            l.addEventListener('mouseenter', () => cursor.classList.add('active'));
+            l.addEventListener('mouseleave', () => cursor.classList.remove('active'));
+        });
+
+        function reveal() {
+            var reveals = document.querySelectorAll(".reveal");
+            for (var i = 0; i < reveals.length; i++) {
+                if (reveals[i].getBoundingClientRect().top < window.innerHeight - 100) reveals[i].classList.add("active");
+            }
+        }
+        window.addEventListener("scroll", reveal);
+        reveal();
+
+        const hamburger = document.querySelector('.hamburger');
+        const navLinks = document.querySelector('.nav-links');
+        hamburger.addEventListener('click', () => navLinks.classList.toggle('active'));
+    </script>
+</body>
+</html>

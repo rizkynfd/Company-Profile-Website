@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Archive | PARFUM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- CORE STYLES --- */
+        :root { --bg-color: #050505; --text-color: #e0e0e0; --card-bg: #141414; }
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
+        body { background-color: var(--bg-color); color: var(--text-color); font-family: 'Inter', sans-serif; overflow-x: hidden; scroll-behavior: smooth; }
+
+        .noise-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E"); pointer-events: none; z-index: 9998; }
+
+        /* FIX KURSOR LEVEL TERTINGGI */
+        .cursor { width: 15px; height: 15px; background: white; border-radius: 50%; position: fixed; pointer-events: none; z-index: 20000; mix-blend-mode: exclusion; transition: transform 0.1s; }
+        .cursor.active { transform: scale(4); background: transparent; border: 1px solid white; }
+
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 2rem 5%; position: fixed; width: 100%; top: 0; z-index: 100; background: rgba(5, 5, 5, 0.5); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .logo { font-family: 'Oswald', sans-serif; font-size: 1.5rem; font-weight: 700; letter-spacing: 3px; }
+        .nav-links { display: flex; gap: 3rem; }
+        .nav-links a { text-decoration: none; color: white; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; opacity: 0.6; transition: 0.3s; }
+        .nav-links a:hover, .nav-links a.active { opacity: 1; letter-spacing: 2px; }
+        .hamburger { display: none; cursor: pointer; z-index: 101; }
+        .bar { display: block; width: 25px; height: 2px; margin: 6px auto; background-color: white; }
+
+        section { padding: 10rem 5% 4rem; max-width: 1400px; margin: 0 auto; min-height: 100vh; }
+        h1 { text-align: center; margin-bottom: 1rem; font-family: 'Oswald', sans-serif; font-size: 4rem; text-transform: uppercase; line-height: 1; }
+        .subtitle { text-align: center; color: #888; margin-bottom: 4rem; font-size: 1.1rem; }
+
+        /* FILTER BAR */
+        .filter-bar { display: flex; justify-content: center; gap: 1rem; margin-bottom: 4rem; flex-wrap: wrap; }
+        .filter-btn { background: transparent; border: 1px solid #333; color: #666; padding: 0.5rem 1.5rem; border-radius: 50px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; transition: 0.3s; }
+        .filter-btn:hover, .filter-btn.active { border-color: #fff; color: #fff; background: #111; }
+
+        /* PRODUCT GRID */
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.5rem; }
+        
+        .product-card { 
+            background: var(--card-bg); border-radius: 12px; overflow: hidden; 
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s; 
+            position: relative; opacity: 0; animation: fadeUp 0.8s ease forwards;
+        }
+
+        .product-card:nth-child(1) { animation-delay: 0.1s; }
+        .product-card:nth-child(2) { animation-delay: 0.2s; }
+        .product-card:nth-child(3) { animation-delay: 0.3s; }
+        .product-card:nth-child(4) { animation-delay: 0.4s; }
+        .product-card:nth-child(5) { animation-delay: 0.5s; }
+        .product-card:nth-child(6) { animation-delay: 0.6s; }
+
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+
+        .product-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.5); z-index: 2; }
+        .card-image { width: 100%; height: 380px; overflow: hidden; position: relative; }
+        .card-image img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%) contrast(1.1); transition: 0.6s; }
+        .product-card:hover .card-image img { filter: grayscale(0%); transform: scale(1.05); }
+        .badge { position: absolute; top: 1rem; left: 1rem; background: rgba(255,255,255,0.95); color: #000; padding: 0.4rem 0.8rem; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; z-index: 2; border-radius: 4px; letter-spacing: 1px; }
+        
+        .product-card.sold-out .card-image img { opacity: 0.4; filter: grayscale(100%); }
+        .product-card.sold-out .btn-acquire { background: #333; color: #666; cursor: not-allowed; pointer-events: none; }
+        .badge.sold { background: #ff3333; color: white; }
+
+        .card-info { padding: 1.5rem; text-align: left; }
+        .card-info h3 { font-family: 'Oswald', sans-serif; text-transform: uppercase; font-size: 1.3rem; margin-bottom: 0.3rem; }
+        .notes { color: #888; font-size: 0.85rem; margin-bottom: 1rem; display: block; font-style: italic; }
+        .price { font-family: 'Oswald', sans-serif; font-size: 1.1rem; letter-spacing: 1px; color: #fff; }
+
+        .btn-acquire { 
+            display: inline-block; margin-top: 1rem; background: #fff; color: #000; 
+            padding: 0.6rem 1.2rem; border-radius: 4px; text-transform: uppercase; 
+            font-size: 0.75rem; letter-spacing: 1px; font-weight: bold; 
+            opacity: 0; transform: translateY(20px); transition: 0.3s; 
+            cursor: pointer;
+        }
+        .product-card:hover .btn-acquire { opacity: 1; transform: translateY(0); }
+        
+        .product-card.hide { display: none; }
+        .product-card.show { animation: fadeUp 0.5s ease forwards; }
+
+        /* --- CINEMATIC MODAL STYLES --- */
+        .modal {
+            display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%;
+            overflow: auto; background-color: rgba(0,0,0,0.9); backdrop-filter: blur(10px);
+            align-items: center; justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: #111; border: 1px solid #333; margin: auto; 
+            width: 90%; max-width: 800px;
+            border-radius: 12px; overflow: hidden;
+            display: grid; grid-template-columns: 1fr 1fr;
+            animation: zoomIn 0.3s ease; position: relative;
+        }
+        @keyframes zoomIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        .modal-video { background: #000; position: relative; overflow: hidden; }
+        .modal-video video { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+        
+        .modal-info { padding: 3rem 2rem; display: flex; flex-direction: column; justify-content: center; text-align: left; }
+
+        .close { color: #fff; position: absolute; top: 1rem; right: 1.5rem; font-size: 2rem; font-weight: bold; transition: 0.3s; cursor: pointer; z-index: 5; }
+        .close:hover { color: #ff3333; }
+
+        .modal h2 { font-family: 'Oswald', sans-serif; margin-bottom: 0.5rem; text-transform: uppercase; color: white; font-size: 2rem; line-height: 1; }
+        .modal p { color: #888; margin-bottom: 2rem; font-size: 0.9rem; }
+        
+        .purchase-options { display: flex; flex-direction: column; gap: 1rem; }
+        .shop-btn {
+            padding: 1rem; border-radius: 8px; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;
+            text-decoration: none; color: white; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .shop-btn.wa { background: #25D366; color: white; }
+        .shop-btn.shopee { background: #EE4D2D; color: white; }
+        .shop-btn.toped { background: #00AA5B; color: white; }
+        .shop-btn:hover { filter: brightness(1.1); transform: translateY(-3px); }
+
+        footer { padding: 4rem 5%; border-top: 1px solid #222; text-align: center; color: #666; font-size: 0.8rem; }
+        
+        @media (max-width: 768px) { 
+            .nav-links { position: fixed; right: -100%; top: 0; height: 100vh; background: #000; width: 70%; flex-direction: column; justify-content: center; transition: 0.4s; border-left: 1px solid #333; } .nav-links.active { right: 0; } .hamburger { display: block; } 
+            h1 { font-size: 2.5rem; } .grid-3 { grid-template-columns: 1fr; }
+            .modal-content { grid-template-columns: 1fr; max-width: 400px; }
+            .modal-video { height: 200px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="noise-overlay"></div>
+    <div class="cursor"></div>
+    <nav>
+        <div class="logo">PARFUM.</div>
+        <ul class="nav-links">
+            <li><a href="index.html" class="hover-trigger">Home</a></li>
+            <li><a href="about.html" class="hover-trigger">Manifesto</a></li>
+            <li><a href="products.html" class="hover-trigger active">The Archive</a></li>
+            <li><a href="journal.html" class="hover-trigger">The Hype</a></li>
+            <li><a href="contact.html" class="hover-trigger">Join Cult</a></li>
+        </ul>
+        <div class="hamburger hover-trigger"><span class="bar"></span><span class="bar"></span><span class="bar"></span></div>
+    </nav>
+
+    <section>
+        <h1 class="reveal">THE ARCHIVE</h1>
+        <p class="subtitle reveal">Koleksi terbatas. Diproduksi dalam *small batches*.</p>
+        
+        <div class="filter-bar reveal">
+            <button class="filter-btn active hover-trigger" data-filter="all">All Scents</button>
+            <button class="filter-btn hover-trigger" data-filter="woody">Woody</button>
+            <button class="filter-btn hover-trigger" data-filter="fresh">Fresh</button>
+            <button class="filter-btn hover-trigger" data-filter="oriental">Oriental</button>
+        </div>
+        
+        <div class="grid-3">
+            <div class="product-card reveal hover-trigger" data-category="woody">
+                <div class="card-image">
+                    <span class="badge">Best Seller</span>
+                    <img src="https://i.pinimg.com/736x/de/a6/85/dea685ef80b36063a7286a20e71a0152.jpg" alt="Stronger With You Intensely">
+                </div>
+                <div class="card-info">
+                    <h3>Stronger With You</h3>
+                    <span class="notes">Toffee, Cinnamon, Vanilla</span>
+                    <span class="price">IDR 189.000</span>
+                    <a class="btn-acquire" onclick="openModal('Stronger With You', 'SWYI.mp4')">Acquire Now</a>
+                </div>
+            </div>
+
+            <div class="product-card reveal hover-trigger" data-category="oriental">
+                <div class="card-image">
+                    <span class="badge">Limited</span>
+                    <img src="https://i.pinimg.com/1200x/65/db/e3/65dbe360549cb1d25064f47517bf01db.jpg" alt="JPG Le Male Elixir">
+                </div>
+                <div class="card-info">
+                    <h3>JPG Le Male Elixir</h3>
+                    <span class="notes">Lavender, Tonka Bean, Benzoin</span>
+                    <span class="price">IDR 189.000</span>
+                    <a class="btn-acquire" onclick="openModal('JPG Le Male Elixir', 'Elixir.mp4')">Acquire Now</a>
+                </div>
+            </div>
+
+            <div class="product-card reveal hover-trigger" data-category="fresh">
+                <div class="card-image">
+                    <img src="https://i.pinimg.com/1200x/6c/fe/a6/6cfea662cbbb432c905a1db1041aa082.jpg" alt="YSL Y EDP">
+                </div>
+                <div class="card-info">
+                    <h3>YSL Y EDP</h3>
+                    <span class="notes">Bergamot, Sage, Ginger</span>
+                    <span class="price">IDR 175.000</span>
+                    <a class="btn-acquire" onclick="openModal('YSL Y EDP', 'YSL Y.mp4')">Acquire Now</a>
+                </div>
+            </div>
+
+             <div class="product-card reveal hover-trigger" data-category="woody">
+                <div class="card-image">
+                    <span class="badge">New Arrival</span>
+                    <img src="https://i.pinimg.com/1200x/01/02/df/0102df91e382c90fe74afed0dc6bfc58.jpg" alt="PARFUMS de MARLY Pegasus">
+                </div>
+                <div class="card-info">
+                    <h3>PARFUMS de MARLY Pegasusr</h3>
+                    <span class="notes">Bourbon Vanilla, Praline, Musk</span>
+                    <span class="price">IDR 175.000</span>
+                    <a class="btn-acquire" onclick="openModal('PdM Pegasus', 'PDM.mp4')">Acquire Now</a>
+                </div>
+            </div>
+
+            <div class="product-card reveal hover-trigger" data-category="fresh">
+                <div class="card-image">
+                    <img src="https://i.pinimg.com/1200x/ec/52/03/ec5203e7457f473f45c9f0c52b7b9d28.jpg" alt="Creed Aventus">
+                </div>
+                <div class="card-info">
+                    <h3>Creed Aventus</h3>
+                    <span class="notes">Pineapple, Birch, Musk</span>
+                    <span class="price">IDR 165.000</span>
+                    <a class="btn-acquire" onclick="openModal('Creed Adventus', 'Creedaventus.mp4')">Acquire Now</a>
+                </div>
+            </div>
+
+            <div class="product-card sold-out reveal hover-trigger" data-category="oriental">
+                <div class="card-image">
+                    <span class="badge sold">SOLD OUT</span>
+                    <img src="https://i.pinimg.com/1200x/1a/75/8c/1a758c47c69e7dee4e5a674f867737db.jpg" alt="YSL Symphony">
+                </div>
+                <div class="card-info">
+                    <h3 style="color: #666; text-decoration: line-through;">YSL Symphony</h3>
+                    <span class="notes">Ginger, Grapefruit, Bergamot</span>
+                    <span class="price" style="color: #666;">IDR 199.000</span>
+                    <a class="btn-acquire">Out of Stock</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div id="purchaseModal" class="modal">
+        <div class="modal-content hover-trigger">
+            <span class="close" onclick="closeModal()">&times;</span>
+            
+            <div class="modal-video">
+                <video id="modalVideoPlayer" autoplay loop muted playsinline>
+                    <source id="modalVideoSource" src="" type="video/mp4">
+                    Browser tidak support video.
+                </video>
+            </div>
+
+            <div class="modal-info">
+                <h2 id="modalTitle">ACQUIRE SCENT</h2>
+                <p>Select your preferred platform to secure your bottle. Limited stock available.</p>
+                
+                <div class="purchase-options">
+                    <a id="waLink" href="#" target="_blank" class="shop-btn wa">Order via WhatsApp</a>
+                    <a href="https://shopee.co.id" target="_blank" class="shop-btn shopee">Buy on Shopee</a>
+                    <a href="https://tokopedia.com" target="_blank" class="shop-btn toped">Buy on Tokopedia</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer><p class="reveal">© 2025 PARFUM. All Rights Reserved.</p></footer>
+    
+    <script>
+        // 1. CUSTOM CURSOR
+        const cursor = document.querySelector('.cursor');
+        document.addEventListener('mousemove', (e) => { cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px'; });
+        document.querySelectorAll('.hover-trigger').forEach(l => {
+            l.addEventListener('mouseenter', () => cursor.classList.add('active'));
+            l.addEventListener('mouseleave', () => cursor.classList.remove('active'));
+        });
+
+        // 2. SCROLL REVEAL
+        function reveal() {
+            var reveals = document.querySelectorAll(".reveal");
+            for (var i = 0; i < reveals.length; i++) {
+                if (reveals[i].getBoundingClientRect().top < window.innerHeight - 50) reveals[i].classList.add("active");
+            }
+        }
+        window.addEventListener("scroll", reveal);
+        reveal();
+
+        // 3. FILTER LOGIC
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const productCards = document.querySelectorAll('.product-card');
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const filterValue = btn.getAttribute('data-filter');
+                productCards.forEach(card => {
+                    card.classList.remove('show');
+                    card.style.animationDelay = '0s'; 
+                    if (filterValue === 'all' || card.getAttribute('data-category') === filterValue) {
+                        card.classList.remove('hide');
+                        card.classList.add('show');
+                    } else {
+                        card.classList.add('hide');
+                    }
+                });
+            });
+        });
+
+        // 4. MOBILE MENU
+        const hamburger = document.querySelector('.hamburger');
+        const navLinks = document.querySelector('.nav-links');
+        hamburger.addEventListener('click', () => navLinks.classList.toggle('active'));
+
+        // 5. MODAL LOGIC (DINAMIS DENGAN VIDEO)
+        const modal = document.getElementById("purchaseModal");
+        const modalTitle = document.getElementById("modalTitle");
+        const waLink = document.getElementById("waLink");
+        
+        // Ambil elemen video dan source
+        const modalVideoPlayer = document.getElementById("modalVideoPlayer");
+        const modalVideoSource = document.getElementById("modalVideoSource");
+
+        // Fungsi sekarang menerima parameter ke-2: videoFile
+        function openModal(productName, videoFile) {
+            modal.style.display = "flex";
+            modalTitle.innerText = productName;
+            
+            // Update Link WA
+            waLink.href = "https://wa.me/628123456789?text=Halo admin, saya tertarik untuk memesan parfum " + encodeURIComponent(productName) + ". Apakah stok masih ada?";
+
+            // Ganti Sumber Video dan Load Ulang
+            if (videoFile) {
+                modalVideoSource.src = videoFile;
+                modalVideoPlayer.load(); // Wajib di-load ulang agar video ganti
+                modalVideoPlayer.play();
+            }
+        }
+
+        function closeModal() {
+            modal.style.display = "none";
+            modalVideoPlayer.pause(); // Stop video saat tutup agar tidak berisik/berat
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
